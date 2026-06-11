@@ -1,0 +1,38 @@
+export const DEFAULT_PALETTE: readonly string[] = [
+  // Grays
+  "#000000",
+  "#222222",
+  "#444444",
+  "#666666",
+  "#888888",
+  "#aaaaaa",
+  "#cccccc",
+  "#ffffff",
+  // Primary & secondary
+  "#ff0000",
+  "#ff8800",
+  "#ffff00",
+  "#00ff00",
+  "#00ffff",
+  "#0000ff",
+  "#ff00ff",
+  "#8800ff",
+  // Pastels
+  "#ffaaaa",
+  "#ffddaa",
+  "#ffffaa",
+  "#aaffaa",
+  "#aaffff",
+  "#aaaaff",
+  "#ffaaff",
+  "#ddaaff",
+  // Earth / skin tones
+  "#8b4513",
+  "#a0522d",
+  "#cd853f",
+  "#deb887",
+  "#f5deb3",
+  "#ffe4c4",
+  "#ffdab9",
+  "#ffebcd",
+];

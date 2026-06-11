@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Bildpunkt** is a React + TypeScript + Vite frontend application. It's a modern web application template with hot module replacement (HMR), ESLint, Prettier, TypeScript strict mode, and Git hooks for code quality.
+**Bildpunkt** is a browser-based pixel art editor built with React 19, TypeScript, Vite, and Tailwind CSS. Users can draw pixel art on a canvas, save/load projects, and export PNG files — all without any backend.
 
 **Repository**: https://github.com/receter/bildpunkt
 
@@ -14,10 +14,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Framework**: React 19.2.6
 - **Build Tool**: Vite 8.0.12
 - **Language**: TypeScript 6.0.2
-- **Styling**: Plain CSS with CSS order plugin
+- **Styling**: Tailwind CSS (utility-first; no plain CSS except global resets in `index.css`)
+- **Rendering**: HTML Canvas API for the pixel grid
+- **Testing**: Vitest + React Testing Library
 - **Code Quality**:
   - ESLint (flat config, TypeScript support, React Hooks & Refresh plugins)
-  - Prettier 3.8.4 (CSS order via prettier-plugin-css-order)
+  - Prettier 3.8.4
   - lint-staged for pre-commit hooks
   - Husky for Git hooks
 
@@ -26,19 +28,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 bildpunkt/
 ├── src/
-│   ├── App.tsx          # Main app component with counter demo
-│   ├── App.css          # App styles
-│   ├── main.tsx         # React root entry point
-│   ├── index.css        # Global styles
-│   └── assets/          # SVG logos and images
-├── public/              # Static assets (favicon.svg, icons.svg)
+│   ├── components/      # UI components (toolbar, canvas, dialogs, palette)
+│   ├── hooks/           # Custom hooks (useEditor, useHistory, useStorage)
+│   ├── utils/           # Pure functions (fill, image I/O, storage helpers)
+│   ├── types/           # Shared TypeScript types and interfaces
+│   ├── App.tsx          # Root layout component
+│   ├── main.tsx         # React entry point
+│   └── index.css        # Global resets only
+├── docs/                # Step-by-step implementation plan (5 steps)
+├── public/              # Static assets (favicon.svg)
 ├── index.html           # HTML entry point
-├── vite.config.ts       # Vite configuration
-├── tsconfig.json        # TS config references (app & node configs)
-├── tsconfig.app.json    # App-specific TS config (target: es2023, React JSX)
+├── vite.config.ts       # Vite configuration (also configures Vitest)
+├── tsconfig.json        # TS config references
+├── tsconfig.app.json    # App TS config (target: ES2023, React JSX)
 ├── tsconfig.node.json   # Build tools TS config
 ├── eslint.config.js     # ESLint flat config
-├── .prettierrc           # Prettier config (CSS order plugin enabled)
 └── package.json         # Dependencies and npm scripts
 ```
 
@@ -55,95 +59,74 @@ bildpunkt/
 
 ## Development Commands
 
-### Start Development Server
-
 ```bash
-npm run dev
+npm run dev        # Vite dev server at http://localhost:5173 (HMR enabled)
+npm run build      # tsc -b then Vite build → dist/
+npm run preview    # Serve dist/ locally
+npm run lint       # ESLint, max-warnings 0
+npm run format     # Prettier on all files
+npm test           # Vitest unit tests
 ```
 
-Runs Vite dev server with HMR. App loads at http://localhost:5173
+## Keeping the README Up To Date
 
-### Build for Production
+**The README is the public face of this project. Keep it current.**
 
-```bash
-npm run build
-```
+- When new npm scripts are added → update the commands table in README.md
+- When the project structure changes significantly → update the directory tree
+- When new features are shipped → update "What it does" and feature list
+- When dependencies change materially (new testing lib, CSS framework swap) → update "Tech stack"
 
-Runs TypeScript build check (`tsc -b`) then Vite build. Output goes to `dist/`
+Do not describe in-progress or planned features as if they are shipped. Only document what is actually working.
 
-### Lint Code
+## Testing Requirements
 
-```bash
-npm run lint
-```
+**Every meaningful unit of logic must have tests.**
 
-Runs ESLint on all files. Pre-commit hook runs this with `--max-warnings 0` (strict)
-
-### Format Code
-
-```bash
-npm run format
-```
-
-Runs Prettier on all files. Pre-commit hook also runs this on staged files
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-Serves the built app locally for testing
+- All pure utility functions in `src/utils/` must have Vitest unit tests
+- Custom hooks in `src/hooks/` must be tested with `@testing-library/react` `renderHook`
+- Canvas drawing logic must be tested with mocked canvas context
+- Aim for high coverage on fill algorithm, undo/redo history, and storage helpers
+- Test file convention: `src/utils/fill.test.ts`, `src/hooks/useHistory.test.ts`, etc.
+- Run `npm test` before marking a step complete
 
 ## Git Workflow & Hooks
 
 **Pre-commit Hook** (`npx lint-staged`):
 
 - Lints TypeScript/JavaScript with ESLint (strict: no warnings allowed)
-- Formats all staged files with Prettier
-- Automatically runs on commit via Husky
+- Formats staged files with Prettier
 
 **Pre-push Hook**: Currently empty stub
 
-**Claude Code Settings Hook**: `.claude/settings.json` has a "Stop" hook configured that formats and lints the entire `src/` directory with Prettier and ESLint (--fix enabled)
+**Claude Code Settings Hook**: `.claude/settings.json` has a "Stop" hook that formats and lints `src/` with Prettier and ESLint (--fix enabled)
 
 ## Code Style Rules
 
+- **Styling**: Tailwind utility classes only — no custom CSS files per component
 - **Imports**: Sorted via `eslint-plugin-simple-import-sort` (enforced as error)
-- **CSS Declaration Order**: Alphabetical via `prettier-plugin-css-order`
 - **React Hooks**: Validated by `eslint-plugin-react-hooks`
 - **React Refresh**: `eslint-plugin-react-refresh` ensures Fast Refresh compatibility
+- **No comments** unless the WHY is non-obvious (hidden invariant, workaround, etc.)
 
-## Current App Structure
+## Accessibility Requirements
 
-The app demonstrates a basic React component with:
+Follow WCAG 2.1 AA throughout:
 
-- Counter state using `useState`
-- Image assets imported and rendered
-- Multiple sections showing documentation and social links
-- CSS layout using flexbox and grid (see `App.css` for details)
+- All interactive elements need visible focus rings and `aria-label` or visible text
+- Tool buttons use `role="radio"` within a `role="radiogroup"` (only one active tool)
+- Canvas must expose a text alternative describing the current artwork
+- Color contrast must meet AA (4.5:1 for text, 3:1 for UI components)
+- Every action available by mouse must also be reachable by keyboard
 
-Main entry: `src/main.tsx` → `src/App.tsx` → mounted in `#root` div (index.html)
+## Architecture Notes
 
-## Dependencies Overview
+- **Canvas pixel data** is stored as a flat `Uint8ClampedArray` (RGBA) — same format as `ImageData`. Never store pixel state as a 2D array of color strings.
+- **Undo/redo** uses an immutable snapshot stack — each entry is a copy of the full pixel buffer. Keep the stack bounded (e.g., max 50 snapshots).
+- **Local storage** projects are stored as base64-encoded PNG data under a namespaced key (`bildpunkt:project:<id>`). The index of all projects lives at `bildpunkt:index`.
+- **Fill algorithm**: flood fill implemented iteratively (stack-based), not recursively, to avoid call-stack overflows on large canvases.
+- **Image import**: scale imported images to the canvas size using `drawImage` on an offscreen canvas, then read back `ImageData`.
 
-**Production**:
+## Implementation Plan
 
-- `react@^19.2.6` - Latest React with improved composition/compiler support
-- `react-dom@^19.2.6` - DOM rendering
-
-**Dev** (key ones):
-
-- TypeScript ecosystem: `typescript`, `@types/react`, `@types/react-dom`, `@types/node`
-- Build: Vite, @vitejs/plugin-react
-- Linting: ESLint with TypeScript, React plugins
-- Formatting: Prettier with CSS order plugin
-- Git hooks: Husky, lint-staged
-
-## Notes for Future Development
-
-1. **React Compiler Not Enabled**: The template intentionally disables React Compiler due to performance impact. See React docs if you want to enable it.
-2. **Strict Type Checking**: TypeScript is configured very strictly. Unused locals/parameters will cause build failures—intentional for code quality.
-3. **HMR Works Out-of-Box**: Changes to `.tsx`/`.css` files hot-reload in the browser.
-4. **No Testing Framework Included**: Consider adding Vitest or Jest if tests are needed.
-5. **Import Organization**: Don't manually sort imports—ESLint will enforce and auto-fix the correct order.
+See `docs/` for the five-step plan. Each step has a markdown document with instructions, acceptance criteria, and notes on what to test.

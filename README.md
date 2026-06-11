@@ -1,73 +1,102 @@
-# React + TypeScript + Vite
+# Bildpunkt — Pixel Art Editor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple, fast, and beginner-friendly pixel art editor that runs entirely in the browser. No sign-up, no cloud, no complexity — just open and draw.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Draw pixel art** on a 16×16, 32×32, or 64×64 canvas
+- **Essential tools**: pencil, eraser, flood fill, and color picker
+- **32-color palette** with a full custom color picker
+- **Undo / redo** up to 50 steps, with keyboard shortcuts
+- **Zoom** from 1× to 32× with a grid overlay (toggle with G)
+- **Export PNG** at exact canvas resolution (Ctrl+Shift+S)
+- **Import** any image and scale it to the canvas (file or Ctrl+V paste)
+- **Save to browser** — projects survive page reloads (Ctrl+S)
+- **Project browser** — browse, open, rename (double-click), and delete saved projects (Ctrl+O)
+- **Keyboard canvas navigation** — Arrow keys move the cursor, Space draws
+- **Help panel** — keyboard shortcut reference (press ?)
 
-## React Compiler
+## Design principles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Simple · Fast to understand · Lightweight · Beginner-friendly
 
-## Expanding the ESLint configuration
+Every feature is there to support one goal: making simple pixel art quickly and easily.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting started
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+## Keyboard shortcuts
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+| Key          | Action                          |
+| ------------ | ------------------------------- |
+| P            | Pencil                          |
+| E            | Eraser                          |
+| F            | Fill                            |
+| K            | Color picker                    |
+| G            | Toggle grid                     |
+| + / -        | Zoom in / out                   |
+| ?            | Toggle help panel               |
+| Ctrl+Z       | Undo                            |
+| Ctrl+Y       | Redo                            |
+| Ctrl+S       | Save to browser                 |
+| Ctrl+O       | Open project browser            |
+| Ctrl+Shift+S | Export PNG                      |
+| Ctrl+N       | New canvas                      |
+| Ctrl+V       | Paste image from clipboard      |
+| ↑ ↓ ← →      | Move cursor (canvas focused)    |
+| Space        | Draw at cursor (canvas focused) |
+
+## Tech stack
+
+- React 19 + TypeScript
+- Vite (HMR, fast builds)
+- Tailwind CSS (utility-first styling)
+- HTML Canvas API (pixel rendering)
+- Vitest + React Testing Library (unit and component tests)
+
+## Available commands
+
+| Command                 | Description                          |
+| ----------------------- | ------------------------------------ |
+| `npm run dev`           | Start development server with HMR    |
+| `npm run build`         | Type-check and build for production  |
+| `npm run preview`       | Preview the production build locally |
+| `npm run lint`          | Run ESLint (strict, no warnings)     |
+| `npm run format`        | Format all files with Prettier       |
+| `npm test`              | Run all Vitest tests                 |
+| `npm run test:coverage` | Run tests with v8 coverage report    |
+
+## Project structure
+
 ```
+src/
+  components/
+    canvas/     # PixelCanvas — rendering and input
+    dialogs/    # NewCanvasDialog, ProjectBrowser, HelpDialog
+    layout/     # AppShell, Toolbar, Sidebar
+    palette/    # ColorPalette
+    ui/         # Toast, StatusBar, ErrorBoundary
+  hooks/        # useEditor, useHistory, useStorage, useKeyboardShortcuts, useToast
+  utils/        # fill, pixelBuffer, color, palette, storage, export, import
+  types/        # Shared TypeScript interfaces
+  App.tsx       # Root component
+  main.tsx      # React entry point
+docs/           # Step-by-step implementation guides
+```
+
+## Accessibility
+
+The editor follows WCAG 2.1 AA guidelines:
+
+- All interactive elements are keyboard-accessible with visible focus rings
+- Tool buttons use `role="radiogroup"` / `role="radio"` with `aria-checked`
+- Canvas exposes `role="img"` with a descriptive `aria-label`
+- Keyboard cursor: focus the canvas and navigate with Arrow keys, draw with Space
+- Status messages use `aria-live="polite"` for screen reader announcements
+- All dialogs have `role="dialog"`, `aria-modal`, and focus management
