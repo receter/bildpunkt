@@ -131,7 +131,10 @@ export default function App() {
 
   function handleNewCanvas(size: CanvasSize) {
     editor.setCanvasSize(size);
-    history.resetToSize(size);
+    const blank = createBuffer(size);
+    history.reset(blank);
+    workingRef.current = blank;
+    setDisplayBuffer(blank);
     setCurrentProjectId(null);
     setProjectName("Untitled");
     setIsDirty(false);
