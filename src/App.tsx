@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { PixelCanvas } from "./components/canvas/PixelCanvas";
 import { HelpDialog } from "./components/dialogs/HelpDialog";
@@ -34,10 +35,9 @@ import {
 
 const TRANSPARENT = { r: 0, g: 0, b: 0, a: 0 } as const;
 
-type AppView = "landing" | "editor";
-
 export default function App() {
-  const [currentView, setCurrentView] = useState<AppView>("landing");
+  const navigate = useNavigate();
+  const location = useLocation();
   const editor = useEditor();
   const storage = useStorage();
   const { message: toastMessage, showToast } = useToast();
@@ -139,7 +139,7 @@ export default function App() {
     setProjectName("Untitled");
     setIsDirty(false);
     setNewCanvasOpen(false);
-    setCurrentView("editor");
+    navigate("/editor");
   }
 
   // Landing page actions
@@ -156,7 +156,7 @@ export default function App() {
       const buf = await importImageFile(file, editor.state.canvasSize);
       commitHistory(buf);
       updateBuffer(buf);
-      setCurrentView("editor");
+      navigate("/editor");
       showToast("Image imported");
     } catch {
       showToast("Failed to import image");
@@ -220,7 +220,7 @@ export default function App() {
       setProjectName(project.name);
       setIsDirty(false);
       setBrowserOpen(false);
-      setCurrentView("editor");
+      navigate("/editor");
     } catch {
       showToast("Failed to open project");
     }
@@ -251,8 +251,10 @@ export default function App() {
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 
+  const isEditor = location.pathname.startsWith("/editor");
+
   useKeyboardShortcuts(
-    currentView === "editor"
+    isEditor
       ? {
           p: () => editor.setTool("pencil"),
           e: () => editor.setTool("eraser"),
@@ -276,138 +278,145 @@ export default function App() {
 
   const canvasAriaLabel = `${editor.state.canvasSize.width}×${editor.state.canvasSize.height} pixel canvas — ${projectName}`;
 
-  // Show landing page
-  if (currentView === "landing") {
-    return (
-      <>
-        <LandingPage
-          onNewCanvas={handleLandingNewCanvas}
-          onOpenProject={handleLandingOpenProject}
-          onImportImage={handleLandingImportImage}
-        />
-
-        {newCanvasOpen && (
-          <NewCanvasDialog
-            onConfirm={handleNewCanvas}
-            onCancel={() => setNewCanvasOpen(false)}
-          />
-        )}
-
-        {browserOpen && (
-          <ProjectBrowser
-            projects={storage.projects}
-            onOpen={(p) => void handleOpenProject(p)}
-            onRename={storage.rename}
-            onDelete={storage.remove}
-            onClose={() => setBrowserOpen(false)}
-          />
-        )}
-
-        <Toast message={toastMessage} />
-      </>
-    );
-  }
-
-  // Show editor
   return (
-    <>
-      {/* Small-screen message */}
-      <div className="flex h-screen items-center justify-center bg-neutral-900 px-6 md:hidden">
-        <p className="max-w-xs text-center text-sm text-neutral-400">
-          Bildpunkt works best on desktop. Please open it on a larger screen.
-        </p>
-      </div>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <>
+            <LandingPage
+              onNewCanvas={handleLandingNewCanvas}
+              onOpenProject={handleLandingOpenProject}
+              onImportImage={handleLandingImportImage}
+            />
 
-      {/* Main application — desktop+ */}
-      <div className="hidden h-screen w-screen md:block">
-        <AppShell
-          toolbar={
-            <Toolbar
-              tool={editor.state.tool}
-              zoom={editor.state.zoom}
-              showGrid={editor.state.showGrid}
-              canUndo={history.canUndo}
-              canRedo={history.canRedo}
-              onNew={() => setNewCanvasOpen(true)}
-              onClear={handleClear}
-              onSetTool={editor.setTool}
-              onZoomIn={() => editor.setZoom(editor.state.zoom + 2)}
-              onZoomOut={() => editor.setZoom(editor.state.zoom - 2)}
-              onToggleGrid={editor.toggleGrid}
-              onUndo={history.undo}
-              onRedo={history.redo}
-              onHelp={() => setHelpOpen((v) => !v)}
-            />
-          }
-          canvas={
-            <PixelCanvas
-              buffer={displayBuffer}
-              size={editor.state.canvasSize}
-              zoom={editor.state.zoom}
-              showGrid={editor.state.showGrid}
-              ariaLabel={canvasAriaLabel}
-              onDraw={handleDraw}
-              onCommit={handleCommit}
-              onHover={setHoverPos}
-            />
-          }
-          statusBar={
-            <StatusBar
-              hoverPos={hoverPos}
-              size={editor.state.canvasSize}
-              zoom={editor.state.zoom}
-              tool={editor.state.tool}
-              isDirty={isDirty}
-            />
-          }
-          sidebar={
-            <Sidebar
-              size={editor.state.canvasSize}
-              primaryColor={editor.state.primaryColor}
-              projectName={projectName}
-              isDirty={isDirty}
-              onColorChange={editor.setColor}
-              onSave={handleSave}
-              onExportPng={handleExportPng}
-              onImportImage={() => fileInputRef.current?.click()}
-              onOpenBrowser={() => setBrowserOpen(true)}
-              onRenameProject={setProjectName}
-            />
-          }
-        />
-      </div>
+            {newCanvasOpen && (
+              <NewCanvasDialog
+                onConfirm={handleNewCanvas}
+                onCancel={() => setNewCanvasOpen(false)}
+              />
+            )}
 
-      {/* Hidden file input for import */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        aria-hidden="true"
-        tabIndex={-1}
-        onChange={handleFileInputChange}
+            {browserOpen && (
+              <ProjectBrowser
+                projects={storage.projects}
+                onOpen={(p) => void handleOpenProject(p)}
+                onRename={storage.rename}
+                onDelete={storage.remove}
+                onClose={() => setBrowserOpen(false)}
+              />
+            )}
+
+            <Toast message={toastMessage} />
+          </>
+        }
       />
 
-      {newCanvasOpen && (
-        <NewCanvasDialog
-          onConfirm={handleNewCanvas}
-          onCancel={() => setNewCanvasOpen(false)}
-        />
-      )}
+      <Route
+        path="/editor"
+        element={
+          <>
+            {/* Small-screen message */}
+            <div className="flex h-screen items-center justify-center bg-neutral-900 px-6 md:hidden">
+              <p className="max-w-xs text-center text-sm text-neutral-400">
+                Bildpunkt works best on desktop. Please open it on a larger
+                screen.
+              </p>
+            </div>
 
-      {browserOpen && (
-        <ProjectBrowser
-          projects={storage.projects}
-          onOpen={(p) => void handleOpenProject(p)}
-          onRename={storage.rename}
-          onDelete={storage.remove}
-          onClose={() => setBrowserOpen(false)}
-        />
-      )}
+            {/* Main application — desktop+ */}
+            <div className="hidden h-screen w-screen md:block">
+              <AppShell
+                toolbar={
+                  <Toolbar
+                    tool={editor.state.tool}
+                    zoom={editor.state.zoom}
+                    showGrid={editor.state.showGrid}
+                    canUndo={history.canUndo}
+                    canRedo={history.canRedo}
+                    onNew={() => setNewCanvasOpen(true)}
+                    onClear={handleClear}
+                    onSetTool={editor.setTool}
+                    onZoomIn={() => editor.setZoom(editor.state.zoom + 2)}
+                    onZoomOut={() => editor.setZoom(editor.state.zoom - 2)}
+                    onToggleGrid={editor.toggleGrid}
+                    onUndo={history.undo}
+                    onRedo={history.redo}
+                    onHelp={() => setHelpOpen((v) => !v)}
+                  />
+                }
+                canvas={
+                  <PixelCanvas
+                    buffer={displayBuffer}
+                    size={editor.state.canvasSize}
+                    zoom={editor.state.zoom}
+                    showGrid={editor.state.showGrid}
+                    ariaLabel={canvasAriaLabel}
+                    onDraw={handleDraw}
+                    onCommit={handleCommit}
+                    onHover={setHoverPos}
+                  />
+                }
+                statusBar={
+                  <StatusBar
+                    hoverPos={hoverPos}
+                    size={editor.state.canvasSize}
+                    zoom={editor.state.zoom}
+                    tool={editor.state.tool}
+                    isDirty={isDirty}
+                  />
+                }
+                sidebar={
+                  <Sidebar
+                    size={editor.state.canvasSize}
+                    primaryColor={editor.state.primaryColor}
+                    projectName={projectName}
+                    isDirty={isDirty}
+                    onColorChange={editor.setColor}
+                    onSave={handleSave}
+                    onExportPng={handleExportPng}
+                    onImportImage={() => fileInputRef.current?.click()}
+                    onOpenBrowser={() => setBrowserOpen(true)}
+                    onRenameProject={setProjectName}
+                  />
+                }
+              />
+            </div>
 
-      {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
+            {/* Hidden file input for import */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              aria-hidden="true"
+              tabIndex={-1}
+              onChange={handleFileInputChange}
+            />
 
-      <Toast message={toastMessage} />
-    </>
+            {newCanvasOpen && (
+              <NewCanvasDialog
+                onConfirm={handleNewCanvas}
+                onCancel={() => setNewCanvasOpen(false)}
+              />
+            )}
+
+            {browserOpen && (
+              <ProjectBrowser
+                projects={storage.projects}
+                onOpen={(p) => void handleOpenProject(p)}
+                onRename={storage.rename}
+                onDelete={storage.remove}
+                onClose={() => setBrowserOpen(false)}
+              />
+            )}
+
+            {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
+
+            <Toast message={toastMessage} />
+          </>
+        }
+      />
+    </Routes>
   );
 }
