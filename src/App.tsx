@@ -10,6 +10,7 @@ import { PixelCanvas } from "./components/canvas/PixelCanvas";
 import { HelpDialog } from "./components/dialogs/HelpDialog";
 import { NewCanvasDialog } from "./components/dialogs/NewCanvasDialog";
 import { ProjectBrowser } from "./components/dialogs/ProjectBrowser";
+import { LandingPage } from "./components/landing/LandingPage";
 import { AppShell } from "./components/layout/AppShell";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Toolbar } from "./components/layout/Toolbar";
@@ -33,7 +34,10 @@ import {
 
 const TRANSPARENT = { r: 0, g: 0, b: 0, a: 0 } as const;
 
+type AppView = "landing" | "editor";
+
 export default function App() {
+  const [currentView, setCurrentView] = useState<AppView>("landing");
   const editor = useEditor();
   const storage = useStorage();
   const { message: toastMessage, showToast } = useToast();
@@ -132,6 +136,28 @@ export default function App() {
     setProjectName("Untitled");
     setIsDirty(false);
     setNewCanvasOpen(false);
+    setCurrentView("editor");
+  }
+
+  // Landing page actions
+  function handleLandingNewCanvas() {
+    setNewCanvasOpen(true);
+  }
+
+  function handleLandingOpenProject() {
+    setBrowserOpen(true);
+  }
+
+  async function handleLandingImportImage(file: File) {
+    try {
+      const buf = await importImageFile(file, editor.state.canvasSize);
+      commitHistory(buf);
+      updateBuffer(buf);
+      setCurrentView("editor");
+      showToast("Image imported");
+    } catch {
+      showToast("Failed to import image");
+    }
   }
 
   // ── Save / Export ──────────────────────────────────────────────────────────
@@ -191,6 +217,7 @@ export default function App() {
       setProjectName(project.name);
       setIsDirty(false);
       setBrowserOpen(false);
+      setCurrentView("editor");
     } catch {
       showToast("Failed to open project");
     }
@@ -221,27 +248,64 @@ export default function App() {
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 
-  useKeyboardShortcuts({
-    p: () => editor.setTool("pencil"),
-    e: () => editor.setTool("eraser"),
-    f: () => editor.setTool("fill"),
-    k: () => editor.setTool("picker"),
-    g: () => editor.toggleGrid(),
-    "=": () => editor.setZoom(editor.state.zoom + 2),
-    "+": () => editor.setZoom(editor.state.zoom + 2),
-    "-": () => editor.setZoom(editor.state.zoom - 2),
-    "Ctrl+z": () => history.undo(),
-    "Ctrl+y": () => history.redo(),
-    "Ctrl+Shift+Z": () => history.redo(),
-    "Ctrl+n": () => setNewCanvasOpen(true),
-    "Ctrl+s": handleSave,
-    "Ctrl+o": () => setBrowserOpen(true),
-    "Ctrl+Shift+S": handleExportPng,
-    "?": () => setHelpOpen((v) => !v),
-  });
+  useKeyboardShortcuts(
+    currentView === "editor"
+      ? {
+          p: () => editor.setTool("pencil"),
+          e: () => editor.setTool("eraser"),
+          f: () => editor.setTool("fill"),
+          k: () => editor.setTool("picker"),
+          g: () => editor.toggleGrid(),
+          "=": () => editor.setZoom(editor.state.zoom + 2),
+          "+": () => editor.setZoom(editor.state.zoom + 2),
+          "-": () => editor.setZoom(editor.state.zoom - 2),
+          "Ctrl+z": () => history.undo(),
+          "Ctrl+y": () => history.redo(),
+          "Ctrl+Shift+Z": () => history.redo(),
+          "Ctrl+n": () => setNewCanvasOpen(true),
+          "Ctrl+s": handleSave,
+          "Ctrl+o": () => setBrowserOpen(true),
+          "Ctrl+Shift+S": handleExportPng,
+          "?": () => setHelpOpen((v) => !v),
+        }
+      : {},
+  );
 
   const canvasAriaLabel = `${editor.state.canvasSize.width}×${editor.state.canvasSize.height} pixel canvas — ${projectName}`;
 
+  // Show landing page
+  if (currentView === "landing") {
+    return (
+      <>
+        <LandingPage
+          onNewCanvas={handleLandingNewCanvas}
+          onOpenProject={handleLandingOpenProject}
+          onImportImage={handleLandingImportImage}
+        />
+
+        {newCanvasOpen && (
+          <NewCanvasDialog
+            onConfirm={handleNewCanvas}
+            onCancel={() => setNewCanvasOpen(false)}
+          />
+        )}
+
+        {browserOpen && (
+          <ProjectBrowser
+            projects={storage.projects}
+            onOpen={(p) => void handleOpenProject(p)}
+            onRename={storage.rename}
+            onDelete={storage.remove}
+            onClose={() => setBrowserOpen(false)}
+          />
+        )}
+
+        <Toast message={toastMessage} />
+      </>
+    );
+  }
+
+  // Show editor
   return (
     <>
       {/* Small-screen message */}
