@@ -24,7 +24,7 @@ export function LandingPage({
         {/* Large favicon as hero image */}
         <div className="mb-8">
           <img
-            src="/favicon.png"
+            src={`${import.meta.env.BASE_URL}favicon.png`}
             alt="Bildpunkt logo"
             className="h-64 w-64 object-contain"
             style={{
