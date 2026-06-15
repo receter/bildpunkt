@@ -95,27 +95,19 @@ describe("Toolbar", () => {
 
   it("renders tool buttons with descriptive tooltips", () => {
     render(<Toolbar {...defaultProps} tool="pencil" />);
-    expect(
-      screen.getByRole("radio", { name: "Pencil" }),
-    ).toHaveAttribute(
+    expect(screen.getByRole("radio", { name: "Pencil" })).toHaveAttribute(
       "title",
       "Pencil — Draw single pixels (P)",
     );
-    expect(
-      screen.getByRole("radio", { name: "Eraser" }),
-    ).toHaveAttribute(
+    expect(screen.getByRole("radio", { name: "Eraser" })).toHaveAttribute(
       "title",
       "Eraser — Erase pixels to transparent (E)",
     );
-    expect(
-      screen.getByRole("radio", { name: "Fill" }),
-    ).toHaveAttribute(
+    expect(screen.getByRole("radio", { name: "Fill" })).toHaveAttribute(
       "title",
       "Fill — Fill connected area with color (F)",
     );
-    expect(
-      screen.getByRole("radio", { name: "Color picker" }),
-    ).toHaveAttribute(
+    expect(screen.getByRole("radio", { name: "Color picker" })).toHaveAttribute(
       "title",
       "Color picker — Pick a color from the canvas (K)",
     );
