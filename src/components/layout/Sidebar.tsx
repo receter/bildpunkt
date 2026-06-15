@@ -1,3 +1,4 @@
+import { useRelativeTime } from "../../hooks/useRelativeTime";
 import type { CanvasSize, Color } from "../../types";
 import { colorToHex } from "../../utils/color";
 import { ColorPalette } from "../palette/ColorPalette";
@@ -7,6 +8,8 @@ interface Props {
   primaryColor: Color;
   projectName: string;
   isDirty: boolean;
+  lastSavedAt: number | null;
+  highlightOpen: boolean;
   onColorChange: (color: Color) => void;
   onSave: () => void;
   onExportPng: () => void;
@@ -20,6 +23,8 @@ export function Sidebar({
   primaryColor,
   projectName,
   isDirty,
+  lastSavedAt,
+  highlightOpen,
   onColorChange,
   onSave,
   onExportPng,
@@ -28,6 +33,7 @@ export function Sidebar({
   onRenameProject,
 }: Props) {
   const hex = colorToHex(primaryColor);
+  const savedAgo = useRelativeTime(lastSavedAt);
 
   return (
     <div className="flex flex-col gap-5 overflow-y-auto">
@@ -56,6 +62,15 @@ export function Sidebar({
             </span>
           )}
         </div>
+        {savedAgo && (
+          <p
+            className="mb-2 text-xs text-green-400"
+            aria-live="polite"
+            aria-label={`Saved ${savedAgo}`}
+          >
+            Saved {savedAgo}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <button
             onClick={onSave}
@@ -67,7 +82,12 @@ export function Sidebar({
           <button
             onClick={onOpenBrowser}
             title="Open project (Ctrl+O)"
-            className="rounded bg-neutral-600 px-3 py-1 text-xs text-white hover:bg-neutral-500 focus:outline-none focus:ring-2 focus:ring-white"
+            className={[
+              "rounded px-3 py-1 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white",
+              highlightOpen
+                ? "animate-pulse bg-blue-500 hover:bg-blue-600"
+                : "bg-neutral-600 hover:bg-neutral-500",
+            ].join(" ")}
           >
             Open
           </button>
