@@ -90,7 +90,7 @@ export default function App() {
   );
 
   function handleDraw(x: number, y: number) {
-    const { tool, primaryColor, canvasSize } = editor.state;
+    const { tool, primaryColor, canvasSize, brushSize } = editor.state;
 
     if (tool === "picker") {
       const picked = getPixel(workingRef.current, x, y, canvasSize.width);
@@ -112,8 +112,18 @@ export default function App() {
     }
 
     const next = cloneBuffer(workingRef.current);
-    if (tool === "pencil") setPixel(next, x, y, canvasSize.width, primaryColor);
-    if (tool === "eraser") setPixel(next, x, y, canvasSize.width, TRANSPARENT);
+    const color = tool === "pencil" ? primaryColor : TRANSPARENT;
+
+    for (let dy = 0; dy < brushSize; dy++) {
+      for (let dx = 0; dx < brushSize; dx++) {
+        const px = x + dx;
+        const py = y + dy;
+        if (px < canvasSize.width && py < canvasSize.height) {
+          setPixel(next, px, py, canvasSize.width, color);
+        }
+      }
+    }
+
     updateBuffer(next);
   }
 
@@ -370,9 +380,11 @@ export default function App() {
                   <Sidebar
                     size={editor.state.canvasSize}
                     primaryColor={editor.state.primaryColor}
+                    brushSize={editor.state.brushSize}
                     projectName={projectName}
                     isDirty={isDirty}
                     onColorChange={editor.setColor}
+                    onBrushSizeChange={editor.setBrushSize}
                     onSave={handleSave}
                     onExportPng={handleExportPng}
                     onImportImage={() => fileInputRef.current?.click()}

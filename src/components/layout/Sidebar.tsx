@@ -1,13 +1,16 @@
 import type { CanvasSize, Color } from "../../types";
 import { colorToHex } from "../../utils/color";
 import { ColorPalette } from "../palette/ColorPalette";
+import { BrushSizeSelector } from "../ui/BrushSizeSelector";
 
 interface Props {
   size: CanvasSize;
   primaryColor: Color;
   projectName: string;
   isDirty: boolean;
+  brushSize: 1 | 2 | 3;
   onColorChange: (color: Color) => void;
+  onBrushSizeChange: (size: 1 | 2 | 3) => void;
   onSave: () => void;
   onExportPng: () => void;
   onImportImage: () => void;
@@ -20,7 +23,9 @@ export function Sidebar({
   primaryColor,
   projectName,
   isDirty,
+  brushSize,
   onColorChange,
+  onBrushSizeChange,
   onSave,
   onExportPng,
   onImportImage,
@@ -110,7 +115,7 @@ export function Sidebar({
               });
             }}
             className="h-9 w-9 cursor-pointer rounded border-0 bg-transparent p-0 focus:outline-none focus:ring-2 focus:ring-white"
-            aria-label="Pick primary color"
+            aria-label="Pick custom color"
           />
           <span
             className="font-mono text-xs text-neutral-400"
@@ -122,6 +127,16 @@ export function Sidebar({
         <ColorPalette
           primaryColor={primaryColor}
           onColorChange={onColorChange}
+        />
+      </section>
+
+      <section aria-label="Brush">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          Brush size
+        </p>
+        <BrushSizeSelector
+          brushSize={brushSize}
+          onBrushSizeChange={onBrushSizeChange}
         />
       </section>
 

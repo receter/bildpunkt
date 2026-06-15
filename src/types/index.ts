@@ -32,4 +32,5 @@ export interface EditorState {
   canvasSize: CanvasSize;
   zoom: number;
   showGrid: boolean;
+  brushSize: 1 | 2 | 3;
 }
