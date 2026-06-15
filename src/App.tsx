@@ -32,6 +32,7 @@ import {
   getPixel,
   setPixel,
 } from "./utils/pixelBuffer";
+import { drawCircle, drawLine, drawRectangle } from "./utils/shapes";
 
 const TRANSPARENT = { r: 0, g: 0, b: 0, a: 0 } as const;
 
@@ -51,6 +52,11 @@ export default function App() {
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(
     null,
   );
+  const [shapeStartPos, setShapeStartPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const shapeBaseBuffer = useRef<PixelBuffer | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -111,16 +117,109 @@ export default function App() {
       return;
     }
 
+    const isShapeTool =
+      tool === "line" ||
+      tool === "rectangle" ||
+      tool === "rectangle-filled" ||
+      tool === "circle" ||
+      tool === "circle-filled";
+
+    if (isShapeTool && shapeStartPos) {
+      const base = shapeBaseBuffer.current ?? workingRef.current;
+      let result: PixelBuffer;
+
+      if (tool === "line") {
+        result = drawLine(
+          base,
+          shapeStartPos.x,
+          shapeStartPos.y,
+          x,
+          y,
+          primaryColor,
+          canvasSize,
+        );
+      } else if (tool === "rectangle" || tool === "rectangle-filled") {
+        result = drawRectangle(
+          base,
+          shapeStartPos.x,
+          shapeStartPos.y,
+          x,
+          y,
+          primaryColor,
+          canvasSize,
+          tool === "rectangle-filled",
+        );
+      } else {
+        result = drawCircle(
+          base,
+          shapeStartPos.x,
+          shapeStartPos.y,
+          x,
+          y,
+          primaryColor,
+          canvasSize,
+          tool === "circle-filled",
+        );
+      }
+      updateBuffer(result);
+      return;
+    }
+
     const next = cloneBuffer(workingRef.current);
     if (tool === "pencil") setPixel(next, x, y, canvasSize.width, primaryColor);
     if (tool === "eraser") setPixel(next, x, y, canvasSize.width, TRANSPARENT);
     updateBuffer(next);
   }
 
+  function handleDragStart(x: number, y: number) {
+    const { tool } = editor.state;
+    const isShapeTool =
+      tool === "line" ||
+      tool === "rectangle" ||
+      tool === "rectangle-filled" ||
+      tool === "circle" ||
+      tool === "circle-filled";
+
+    if (isShapeTool) {
+      setShapeStartPos({ x, y });
+      shapeBaseBuffer.current = cloneBuffer(workingRef.current);
+    }
+  }
+
+  function handleDragEnd(x: number, y: number) {
+    const { tool } = editor.state;
+    const isShapeTool =
+      tool === "line" ||
+      tool === "rectangle" ||
+      tool === "rectangle-filled" ||
+      tool === "circle" ||
+      tool === "circle-filled";
+
+    if (isShapeTool && shapeStartPos) {
+      handleDraw(x, y);
+      setShapeStartPos(null);
+      shapeBaseBuffer.current = null;
+    }
+  }
+
   function handleCommit() {
     const { tool } = editor.state;
     if (tool === "picker" || tool === "fill") return;
-    commitHistory(workingRef.current);
+
+    const isShapeTool =
+      tool === "line" ||
+      tool === "rectangle" ||
+      tool === "rectangle-filled" ||
+      tool === "circle" ||
+      tool === "circle-filled";
+
+    if (isShapeTool) {
+      commitHistory(workingRef.current);
+      setShapeStartPos(null);
+      shapeBaseBuffer.current = null;
+    } else {
+      commitHistory(workingRef.current);
+    }
   }
 
   function handleClear() {
@@ -260,6 +359,11 @@ export default function App() {
           e: () => editor.setTool("eraser"),
           f: () => editor.setTool("fill"),
           k: () => editor.setTool("picker"),
+          l: () => editor.setTool("line"),
+          r: () => editor.setTool("rectangle"),
+          R: () => editor.setTool("rectangle-filled"),
+          c: () => editor.setTool("circle"),
+          C: () => editor.setTool("circle-filled"),
           g: () => editor.toggleGrid(),
           "=": () => editor.setZoom(editor.state.zoom + 2),
           "+": () => editor.setZoom(editor.state.zoom + 2),
@@ -353,6 +457,8 @@ export default function App() {
                     showGrid={editor.state.showGrid}
                     ariaLabel={canvasAriaLabel}
                     onDraw={handleDraw}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
                     onCommit={handleCommit}
                     onHover={setHoverPos}
                   />

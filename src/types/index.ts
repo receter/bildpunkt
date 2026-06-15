@@ -1,4 +1,13 @@
-export type ToolName = "pencil" | "eraser" | "fill" | "picker";
+export type ToolName =
+  | "pencil"
+  | "eraser"
+  | "fill"
+  | "picker"
+  | "line"
+  | "rectangle"
+  | "rectangle-filled"
+  | "circle"
+  | "circle-filled";
 
 export interface Color {
   r: number;
