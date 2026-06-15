@@ -39,3 +39,10 @@ export function setPixel(
 export function clearBuffer(buf: PixelBuffer): void {
   buf.fill(0);
 }
+
+export function isBufferBlank(buf: PixelBuffer): boolean {
+  for (let i = 0; i < buf.length; i++) {
+    if (buf[i] !== 0) return false;
+  }
+  return true;
+}

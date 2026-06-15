@@ -6,6 +6,7 @@ interface Props {
   showGrid: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  showPencilPulse?: boolean;
   onNew: () => void;
   onClear: () => void;
   onSetTool: (t: ToolName) => void;
@@ -134,6 +135,7 @@ export function Toolbar({
   showGrid,
   canUndo,
   canRedo,
+  showPencilPulse = false,
   onNew,
   onClear,
   onSetTool,
@@ -192,6 +194,7 @@ export function Toolbar({
               tool === t.name
                 ? "bg-white text-neutral-900"
                 : "text-neutral-300 hover:bg-neutral-700 hover:text-white",
+              t.name === "pencil" && showPencilPulse ? "tool-pulse" : "",
             ].join(" ")}
           >
             {t.svg}

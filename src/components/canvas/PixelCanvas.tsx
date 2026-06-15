@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { CanvasSize, PixelBuffer } from "../../types";
+import { isBufferBlank } from "../../utils/pixelBuffer";
 
 interface Props {
   buffer: PixelBuffer;
@@ -37,12 +38,15 @@ export function PixelCanvas({
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
   });
   const [isFocused, setIsFocused] = useState(false);
+
+  const isBlank = isBufferBlank(buffer);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -65,6 +69,22 @@ export function PixelCanvas({
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
+
+    // Show faint grid on blank canvases for orientation
+    if (isBlank) {
+      ctx.strokeStyle = "rgba(200,200,200,0.15)";
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      for (let x = 0; x <= size.width; x++) {
+        ctx.moveTo(x * zoom, 0);
+        ctx.lineTo(x * zoom, size.height * zoom);
+      }
+      for (let y = 0; y <= size.height; y++) {
+        ctx.moveTo(0, y * zoom);
+        ctx.lineTo(size.width * zoom, y * zoom);
+      }
+      ctx.stroke();
+    }
 
     if (showGrid && zoom >= 4) {
       ctx.strokeStyle = "rgba(128,128,128,0.35)";
@@ -93,11 +113,36 @@ export function PixelCanvas({
         zoom - 1,
       );
     }
-  }, [buffer, size, zoom, showGrid, cursorPos, isFocused]);
+
+    // Show text hint on blank canvas before first interaction
+    if (isBlank && !hasInteracted) {
+      ctx.save();
+      ctx.fillStyle = "rgba(200,200,200,0.4)";
+      ctx.font = "14px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        "Click or drag to draw",
+        canvas.width / 2,
+        canvas.height / 2,
+      );
+      ctx.restore();
+    }
+  }, [
+    buffer,
+    size,
+    zoom,
+    showGrid,
+    cursorPos,
+    isFocused,
+    isBlank,
+    hasInteracted,
+  ]);
 
   function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
     if (e.button !== 0) return;
     isDrawing.current = true;
+    setHasInteracted(true);
     const pos = screenToPixel(
       e,
       e.currentTarget.getBoundingClientRect(),
