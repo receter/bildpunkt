@@ -15,11 +15,14 @@ import { LandingPage } from "./components/landing/LandingPage";
 import { AppShell } from "./components/layout/AppShell";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Toolbar } from "./components/layout/Toolbar";
+import { ContextualHint } from "./components/ui/ContextualHint";
+import { OnboardingTutorial } from "./components/ui/OnboardingTutorial";
 import { StatusBar } from "./components/ui/StatusBar";
 import { Toast } from "./components/ui/Toast";
 import { useEditor } from "./hooks/useEditor";
 import { useHistory } from "./hooks/useHistory";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useOnboarding } from "./hooks/useOnboarding";
 import { useStorage } from "./hooks/useStorage";
 import { useToast } from "./hooks/useToast";
 import type { CanvasSize, PixelBuffer, Project } from "./types";
@@ -41,6 +44,7 @@ export default function App() {
   const editor = useEditor();
   const storage = useStorage();
   const { message: toastMessage, showToast } = useToast();
+  const onboarding = useOnboarding();
 
   const [newCanvasOpen, setNewCanvasOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
@@ -51,6 +55,18 @@ export default function App() {
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(
     null,
   );
+  const [showTutorial, setShowTutorial] = useState(() => {
+    // Initialize showTutorial based on onboarding state
+    if (location.pathname.startsWith("/editor")) {
+      const tutorialCompleted =
+        localStorage.getItem("bildpunkt:onboarding:completed") === "true";
+      return !tutorialCompleted;
+    }
+    return false;
+  });
+  const [currentHint, setCurrentHint] = useState<string | null>(null);
+  const [hasDrawn, setHasDrawn] = useState(false);
+  const [hasChangedColor, setHasChangedColor] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,6 +131,11 @@ export default function App() {
     if (tool === "pencil") setPixel(next, x, y, canvasSize.width, primaryColor);
     if (tool === "eraser") setPixel(next, x, y, canvasSize.width, TRANSPARENT);
     updateBuffer(next);
+
+    // Track first draw for contextual hints
+    if (!hasDrawn) {
+      setHasDrawn(true);
+    }
   }
 
   function handleCommit() {
@@ -249,9 +270,92 @@ export default function App() {
     return () => window.removeEventListener("paste", onPaste);
   }, [editor.state.canvasSize, historyCommit, showToast, updateBuffer]);
 
-  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+  // ── Onboarding ─────────────────────────────────────────────────────────────
 
   const isEditor = location.pathname.startsWith("/editor");
+
+  // Show contextual hints after tutorial is complete
+  useEffect(() => {
+    if (!isEditor || !onboarding.state.tutorialCompleted) return;
+
+    // Show drawing hint after a short delay
+    if (!onboarding.state.hintsShown.drawing && !currentHint && !hasDrawn) {
+      const timer = setTimeout(() => {
+        setCurrentHint("Click the canvas to start drawing");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+
+    // Show color hint after user has drawn
+    if (
+      !onboarding.state.hintsShown.colors &&
+      !currentHint &&
+      hasDrawn &&
+      !hasChangedColor
+    ) {
+      const timer = setTimeout(() => {
+        setCurrentHint("Try changing colors in the palette on the right");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+
+    // Show saving hint after user has changed color
+    if (
+      !onboarding.state.hintsShown.saving &&
+      !currentHint &&
+      hasChangedColor &&
+      isDirty
+    ) {
+      const timer = setTimeout(() => {
+        setCurrentHint("Don't forget to save your work!");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    isEditor,
+    onboarding.state.tutorialCompleted,
+    onboarding.state.hintsShown,
+    currentHint,
+    hasDrawn,
+    hasChangedColor,
+    isDirty,
+  ]);
+
+  // Track color changes
+  const prevColorRef = useRef(editor.state.primaryColor);
+  useEffect(() => {
+    if (
+      isEditor &&
+      !hasChangedColor &&
+      (prevColorRef.current.r !== editor.state.primaryColor.r ||
+        prevColorRef.current.g !== editor.state.primaryColor.g ||
+        prevColorRef.current.b !== editor.state.primaryColor.b ||
+        prevColorRef.current.a !== editor.state.primaryColor.a)
+    ) {
+      setHasChangedColor(true);
+    }
+    prevColorRef.current = editor.state.primaryColor;
+  }, [editor.state.primaryColor, isEditor, hasChangedColor]);
+
+  function handleTutorialComplete() {
+    setShowTutorial(false);
+    onboarding.completeTutorial();
+  }
+
+  function handleHintDismiss() {
+    if (currentHint === "Click the canvas to start drawing") {
+      onboarding.markHintShown("drawing");
+    } else if (
+      currentHint === "Try changing colors in the palette on the right"
+    ) {
+      onboarding.markHintShown("colors");
+    } else if (currentHint === "Don't forget to save your work!") {
+      onboarding.markHintShown("saving");
+    }
+    setCurrentHint(null);
+  }
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 
   useKeyboardShortcuts(
     isEditor
@@ -412,6 +516,17 @@ export default function App() {
             )}
 
             {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
+
+            {showTutorial && (
+              <OnboardingTutorial onComplete={handleTutorialComplete} />
+            )}
+
+            {currentHint && (
+              <ContextualHint
+                message={currentHint}
+                onDismiss={handleHintDismiss}
+              />
+            )}
 
             <Toast message={toastMessage} />
           </>
