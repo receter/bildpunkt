@@ -8,6 +8,7 @@ import {
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { PixelCanvas } from "./components/canvas/PixelCanvas";
+import { ExportPreviewDialog } from "./components/dialogs/ExportPreviewDialog";
 import { HelpDialog } from "./components/dialogs/HelpDialog";
 import { NewCanvasDialog } from "./components/dialogs/NewCanvasDialog";
 import { ProjectBrowser } from "./components/dialogs/ProjectBrowser";
@@ -45,6 +46,7 @@ export default function App() {
   const [newCanvasOpen, setNewCanvasOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [exportPreviewOpen, setExportPreviewOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Untitled");
   const [isDirty, setIsDirty] = useState(false);
@@ -180,11 +182,17 @@ export default function App() {
   }
 
   function handleExportPng() {
+    setExportPreviewOpen(true);
+  }
+
+  function handleConfirmExport(scale: number) {
     exportAsPng(
       history.current,
       editor.state.canvasSize,
       projectName || "bildpunkt",
+      scale,
     );
+    setExportPreviewOpen(false);
     showToast("PNG downloaded");
   }
 
@@ -412,6 +420,15 @@ export default function App() {
             )}
 
             {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
+
+            {exportPreviewOpen && (
+              <ExportPreviewDialog
+                buffer={history.current}
+                size={editor.state.canvasSize}
+                onConfirm={handleConfirmExport}
+                onCancel={() => setExportPreviewOpen(false)}
+              />
+            )}
 
             <Toast message={toastMessage} />
           </>
