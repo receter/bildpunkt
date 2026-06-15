@@ -19,30 +19,57 @@ export function LandingPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
-      <div className="flex w-full max-w-4xl flex-col items-center px-6 py-12 text-center">
-        {/* Large favicon as hero image */}
-        <div className="mb-8">
-          <img
-            src={`${import.meta.env.BASE_URL}favicon.png`}
-            alt="Bildpunkt logo"
-            className="h-64 w-64 object-contain"
-            style={{
-              imageRendering: "pixelated",
-            }}
-          />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+      {/* Pixel grid background pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px)
+          `,
+          backgroundSize: "16px 16px",
+        }}
+      />
+
+      <div className="relative z-10 flex w-full max-w-4xl flex-col items-center px-6 py-12 text-center">
+        {/* Inline SVG pixel-art logo */}
+        <div className="mb-10">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 32 32"
+            className="h-48 w-48 sm:h-56 sm:w-56 md:h-64 md:w-64"
+            role="img"
+            aria-label="Bildpunkt pixel art logo"
+            style={{ imageRendering: "pixelated" }}
+          >
+            <rect width="32" height="32" fill="transparent" />
+            {/* Stylized "B" pixel art */}
+            <rect x="8" y="6" width="2" height="20" fill="#3b82f6" />
+            <rect x="10" y="6" width="8" height="2" fill="#3b82f6" />
+            <rect x="18" y="8" width="2" height="4" fill="#3b82f6" />
+            <rect x="10" y="12" width="8" height="2" fill="#3b82f6" />
+            <rect x="18" y="14" width="2" height="4" fill="#3b82f6" />
+            <rect x="10" y="18" width="8" height="2" fill="#3b82f6" />
+            <rect x="18" y="20" width="2" height="4" fill="#3b82f6" />
+            <rect x="10" y="24" width="8" height="2" fill="#3b82f6" />
+            {/* Pixel accent dots */}
+            <rect x="22" y="10" width="2" height="2" fill="#60a5fa" />
+            <rect x="22" y="16" width="2" height="2" fill="#60a5fa" />
+            <rect x="22" y="22" width="2" height="2" fill="#60a5fa" />
+          </svg>
         </div>
 
-        {/* Main heading */}
-        <div className="mb-4">
-          <h1 className="text-6xl font-bold text-white sm:text-7xl md:text-8xl">
+        {/* Main heading with better hierarchy */}
+        <div className="mb-6">
+          <h1 className="bg-gradient-to-br from-white via-neutral-100 to-neutral-300 bg-clip-text text-7xl font-black tracking-tight text-transparent sm:text-8xl md:text-9xl">
             Bildpunkt
           </h1>
         </div>
 
-        {/* Subtitle */}
-        <div className="mb-12">
-          <p className="text-xl text-neutral-300 sm:text-2xl md:text-3xl">
+        {/* Subtitle with improved typography */}
+        <div className="mb-14">
+          <p className="text-2xl font-medium tracking-wide text-neutral-400 sm:text-3xl md:text-4xl">
             Online Pixel Art Editor
           </p>
         </div>
