@@ -51,6 +51,8 @@ export default function App() {
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(
     null,
   );
+  const [isFirstEntry, setIsFirstEntry] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -139,6 +141,8 @@ export default function App() {
     setProjectName("Untitled");
     setIsDirty(false);
     setNewCanvasOpen(false);
+    setIsFirstEntry(true);
+    setCanvasKey((k) => k + 1);
     navigate("/editor");
   }
 
@@ -220,11 +224,22 @@ export default function App() {
       setProjectName(project.name);
       setIsDirty(false);
       setBrowserOpen(false);
+      setCanvasKey((k) => k + 1);
       navigate("/editor");
     } catch {
       showToast("Failed to open project");
     }
   }
+
+  // ── First entry pulse animation timeout ────────────────────────────────────
+
+  useEffect(() => {
+    if (isFirstEntry) {
+      // Pulse animation runs for ~4.5s (1.5s × 3), turn off after 5s
+      const timer = setTimeout(() => setIsFirstEntry(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstEntry]);
 
   // ── Clipboard paste ────────────────────────────────────────────────────────
 
@@ -334,6 +349,7 @@ export default function App() {
                     showGrid={editor.state.showGrid}
                     canUndo={history.canUndo}
                     canRedo={history.canRedo}
+                    showPencilPulse={isFirstEntry}
                     onNew={() => setNewCanvasOpen(true)}
                     onClear={handleClear}
                     onSetTool={editor.setTool}
@@ -347,6 +363,7 @@ export default function App() {
                 }
                 canvas={
                   <PixelCanvas
+                    key={canvasKey}
                     buffer={displayBuffer}
                     size={editor.state.canvasSize}
                     zoom={editor.state.zoom}
