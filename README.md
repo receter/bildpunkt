@@ -9,7 +9,7 @@ A simple, fast, and beginner-friendly pixel art editor that runs entirely in the
 - **32-color palette** with a full custom color picker
 - **Undo / redo** up to 50 steps, with keyboard shortcuts
 - **Zoom** from 1× to 32× with a grid overlay (toggle with G)
-- **Export PNG** at exact canvas resolution (Ctrl+Shift+S)
+- **Download PNG** at exact canvas resolution (Ctrl+Shift+S)
 - **Import** any image and scale it to the canvas (file or Ctrl+V paste)
 - **Save to browser** — projects survive page reloads (Ctrl+S)
 - **Project browser** — browse, open, rename (double-click), and delete saved projects (Ctrl+O)
@@ -46,7 +46,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 | Ctrl+Y       | Redo                            |
 | Ctrl+S       | Save to browser                 |
 | Ctrl+O       | Open project browser            |
-| Ctrl+Shift+S | Export PNG                      |
+| Ctrl+Shift+S | Download PNG                    |
 | Ctrl+N       | New canvas                      |
 | Ctrl+V       | Paste image from clipboard      |
 | ↑ ↓ ← →      | Move cursor (canvas focused)    |

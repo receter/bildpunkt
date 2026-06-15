@@ -61,7 +61,7 @@ export function LandingPage({
             onClick={onOpenProject}
             className="group relative overflow-hidden rounded-lg border-2 border-neutral-600 bg-transparent px-8 py-4 text-lg font-semibold text-white transition-all duration-200 hover:border-neutral-500 hover:bg-neutral-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2 focus:ring-offset-neutral-900 active:scale-95"
           >
-            <span className="relative z-10">Open Project</span>
+            <span className="relative z-10">Saved Projects</span>
           </button>
 
           <label className="group relative cursor-pointer overflow-hidden rounded-lg border-2 border-neutral-600 bg-transparent px-8 py-4 text-lg font-semibold text-white transition-all duration-200 hover:border-neutral-500 hover:bg-neutral-800 hover:shadow-xl focus-within:ring-2 focus-within:ring-neutral-500 focus-within:ring-offset-2 focus-within:ring-offset-neutral-900 active:scale-95">

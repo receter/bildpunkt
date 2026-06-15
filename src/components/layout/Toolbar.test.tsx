@@ -92,4 +92,35 @@ describe("Toolbar", () => {
     render(<Toolbar {...defaultProps} zoom={8} />);
     expect(screen.getByText("8×")).toBeInTheDocument();
   });
+
+  it("renders tool buttons with descriptive tooltips", () => {
+    render(<Toolbar {...defaultProps} tool="pencil" />);
+    expect(screen.getByRole("radio", { name: "Pencil" })).toHaveAttribute(
+      "title",
+      "Pencil — Draw single pixels (P)",
+    );
+    expect(screen.getByRole("radio", { name: "Eraser" })).toHaveAttribute(
+      "title",
+      "Eraser — Erase pixels to transparent (E)",
+    );
+    expect(screen.getByRole("radio", { name: "Fill" })).toHaveAttribute(
+      "title",
+      "Fill — Fill connected area with color (F)",
+    );
+    expect(screen.getByRole("radio", { name: "Color picker" })).toHaveAttribute(
+      "title",
+      "Color picker — Pick a color from the canvas (K)",
+    );
+  });
+
+  it("applies prominent active-tool styling", () => {
+    render(<Toolbar {...defaultProps} tool="pencil" />);
+    const pencil = screen.getByRole("radio", { name: "Pencil" });
+    expect(pencil.className).toContain("bg-violet-500");
+    expect(pencil.className).toContain("ring-violet-400");
+
+    const eraser = screen.getByRole("radio", { name: "Eraser" });
+    expect(eraser.className).toContain("hover:bg-neutral-700");
+    expect(eraser.className).not.toContain("bg-violet-500");
+  });
 });

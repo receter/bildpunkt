@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { CanvasSize, PixelBuffer } from "../../types";
+import type { CanvasSize, PixelBuffer, ToolName } from "../../types";
 
 interface Props {
   buffer: PixelBuffer;
@@ -8,10 +8,18 @@ interface Props {
   zoom: number;
   showGrid: boolean;
   ariaLabel: string;
+  tool: ToolName;
   onDraw: (x: number, y: number) => void;
   onCommit: () => void;
   onHover?: (pos: { x: number; y: number } | null) => void;
 }
+
+const CURSOR_MAP: Record<ToolName, string> = {
+  pencil: "crosshair",
+  eraser: "crosshair",
+  fill: "crosshair",
+  picker: "crosshair",
+};
 
 function screenToPixel(
   e: React.MouseEvent<HTMLCanvasElement>,
@@ -31,6 +39,7 @@ export function PixelCanvas({
   zoom,
   showGrid,
   ariaLabel,
+  tool,
   onDraw,
   onCommit,
   onHover,
@@ -170,7 +179,7 @@ export function PixelCanvas({
         width={size.width * zoom}
         height={size.height * zoom}
         style={{ imageRendering: "pixelated", display: "block" }}
-        className="cursor-crosshair focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-neutral-700"
+        className={`cursor-${CURSOR_MAP[tool]} focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-neutral-700`}
         role="img"
         aria-label={ariaLabel}
         tabIndex={0}
