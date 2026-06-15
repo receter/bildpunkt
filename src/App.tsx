@@ -352,6 +352,7 @@ export default function App() {
                     zoom={editor.state.zoom}
                     showGrid={editor.state.showGrid}
                     ariaLabel={canvasAriaLabel}
+                    tool={editor.state.tool}
                     onDraw={handleDraw}
                     onCommit={handleCommit}
                     onHover={setHoverPos}

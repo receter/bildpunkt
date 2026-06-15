@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
+
 import type { CanvasSize, Color } from "../../types";
 import { colorToHex } from "../../utils/color";
+import { formatRelativeTime } from "../../utils/time";
 import { ColorPalette } from "../palette/ColorPalette";
 
 interface Props {
@@ -7,6 +10,8 @@ interface Props {
   primaryColor: Color;
   projectName: string;
   isDirty: boolean;
+  lastSavedAt: number | null;
+  shouldHighlightSavedProjects: boolean;
   onColorChange: (color: Color) => void;
   onSave: () => void;
   onExportPng: () => void;
@@ -20,6 +25,8 @@ export function Sidebar({
   primaryColor,
   projectName,
   isDirty,
+  lastSavedAt,
+  shouldHighlightSavedProjects,
   onColorChange,
   onSave,
   onExportPng,
@@ -29,11 +36,23 @@ export function Sidebar({
 }: Props) {
   const hex = colorToHex(primaryColor);
 
+  // Update relative time every minute to keep it current
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    if (!lastSavedAt) return;
+
+    const interval = setInterval(() => {
+      forceUpdate({});
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [lastSavedAt]);
+
   return (
     <div className="flex flex-col gap-5 overflow-y-auto">
-      <section aria-label="File">
+      <section aria-label="Project">
         <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
-          File
+          Project
         </p>
         <div className="mb-2 flex items-center gap-1.5">
           <label htmlFor="project-name" className="sr-only">
@@ -56,6 +75,14 @@ export function Sidebar({
             </span>
           )}
         </div>
+        {lastSavedAt && !isDirty && (
+          <div className="mb-2 flex items-center gap-1 text-xs text-neutral-400">
+            <span className="text-green-400" aria-hidden="true">
+              ●
+            </span>
+            <span>Saved {formatRelativeTime(lastSavedAt)}</span>
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           <button
             onClick={onSave}
@@ -66,17 +93,29 @@ export function Sidebar({
           </button>
           <button
             onClick={onOpenBrowser}
-            title="Open project (Ctrl+O)"
-            className="rounded bg-neutral-600 px-3 py-1 text-xs text-white hover:bg-neutral-500 focus:outline-none focus:ring-2 focus:ring-white"
+            title="Saved Projects (Ctrl+O)"
+            className={`rounded px-3 py-1 text-xs text-white hover:bg-neutral-500 focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300 ${
+              shouldHighlightSavedProjects
+                ? "bg-blue-600 animate-pulse shadow-lg shadow-blue-500/50"
+                : "bg-neutral-600"
+            }`}
           >
-            Open
+            Saved Projects
           </button>
+        </div>
+      </section>
+
+      <section aria-label="File">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          File
+        </p>
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={onExportPng}
-            title="Export PNG (Ctrl+Shift+S)"
+            title="Download PNG (Ctrl+Shift+S)"
             className="rounded bg-neutral-600 px-3 py-1 text-xs text-white hover:bg-neutral-500 focus:outline-none focus:ring-2 focus:ring-white"
           >
-            Export PNG
+            Download PNG
           </button>
           <button
             onClick={onImportImage}

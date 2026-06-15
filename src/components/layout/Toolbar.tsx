@@ -21,12 +21,14 @@ const TOOLS: {
   name: ToolName;
   label: string;
   shortcut: string;
+  description: string;
   svg: React.ReactNode;
 }[] = [
   {
     name: "pencil",
     label: "Pencil",
     shortcut: "P",
+    description: "Draw single pixels",
     svg: (
       <svg
         viewBox="0 0 16 16"
@@ -43,6 +45,7 @@ const TOOLS: {
     name: "eraser",
     label: "Eraser",
     shortcut: "E",
+    description: "Erase pixels to transparent",
     svg: (
       <svg
         viewBox="0 0 16 16"
@@ -59,6 +62,7 @@ const TOOLS: {
     name: "fill",
     label: "Fill",
     shortcut: "F",
+    description: "Fill connected area with color",
     svg: (
       <svg
         viewBox="0 0 16 16"
@@ -75,6 +79,7 @@ const TOOLS: {
     name: "picker",
     label: "Color picker",
     shortcut: "K",
+    description: "Pick a color from the canvas",
     svg: (
       <svg
         viewBox="0 0 16 16"
@@ -184,13 +189,13 @@ export function Toolbar({
             role="radio"
             aria-checked={tool === t.name}
             aria-label={t.label}
-            title={`${t.label} (${t.shortcut})`}
+            title={`${t.label} — ${t.description} (${t.shortcut})`}
             onClick={() => onSetTool(t.name)}
             className={[
               "flex h-10 w-10 items-center justify-center rounded transition-colors",
               "focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-neutral-800",
               tool === t.name
-                ? "bg-white text-neutral-900"
+                ? "bg-violet-500 text-white ring-2 ring-violet-400 ring-offset-1 ring-offset-neutral-800 shadow-lg shadow-violet-500/30"
                 : "text-neutral-300 hover:bg-neutral-700 hover:text-white",
             ].join(" ")}
           >
