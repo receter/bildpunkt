@@ -9,6 +9,8 @@ interface Props {
   showGrid: boolean;
   ariaLabel: string;
   onDraw: (x: number, y: number) => void;
+  onDragStart?: (x: number, y: number) => void;
+  onDragEnd?: (x: number, y: number) => void;
   onCommit: () => void;
   onHover?: (pos: { x: number; y: number } | null) => void;
 }
@@ -32,11 +34,14 @@ export function PixelCanvas({
   showGrid,
   ariaLabel,
   onDraw,
+  onDragStart,
+  onDragEnd,
   onCommit,
   onHover,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null);
 
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({
     x: 0,
@@ -104,7 +109,13 @@ export function PixelCanvas({
       zoom,
       size,
     );
-    if (pos) onDraw(pos.x, pos.y);
+    if (pos) {
+      dragStartPos.current = pos;
+      if (onDragStart) {
+        onDragStart(pos.x, pos.y);
+      }
+      onDraw(pos.x, pos.y);
+    }
   }
 
   function handleMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
@@ -118,9 +129,19 @@ export function PixelCanvas({
     if (isDrawing.current && pos) onDraw(pos.x, pos.y);
   }
 
-  function handleMouseUp() {
+  function handleMouseUp(e: React.MouseEvent<HTMLCanvasElement>) {
     if (!isDrawing.current) return;
     isDrawing.current = false;
+    const pos = screenToPixel(
+      e,
+      e.currentTarget.getBoundingClientRect(),
+      zoom,
+      size,
+    );
+    if (pos && onDragEnd) {
+      onDragEnd(pos.x, pos.y);
+    }
+    dragStartPos.current = null;
     onCommit();
   }
 
@@ -176,7 +197,7 @@ export function PixelCanvas({
         tabIndex={0}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseUp={(e) => handleMouseUp(e)}
         onMouseLeave={handleMouseLeave}
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}

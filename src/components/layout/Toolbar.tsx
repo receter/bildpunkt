@@ -87,6 +87,86 @@ const TOOLS: {
       </svg>
     ),
   },
+  {
+    name: "line",
+    label: "Line",
+    shortcut: "L",
+    svg: (
+      <svg
+        viewBox="0 0 16 16"
+        width="18"
+        height="18"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M14.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0M2.5 14.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m12-13a.5.5 0 0 0-.707 0L1.146 14.146a.5.5 0 0 0 .708.708l12.646-12.646a.5.5 0 0 0 0-.708" />
+      </svg>
+    ),
+  },
+  {
+    name: "rectangle",
+    label: "Rectangle",
+    shortcut: "R",
+    svg: (
+      <svg
+        viewBox="0 0 16 16"
+        width="18"
+        height="18"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z" />
+      </svg>
+    ),
+  },
+  {
+    name: "rectangle-filled",
+    label: "Filled rectangle",
+    shortcut: "Shift+R",
+    svg: (
+      <svg
+        viewBox="0 0 16 16"
+        width="18"
+        height="18"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2z" />
+      </svg>
+    ),
+  },
+  {
+    name: "circle",
+    label: "Circle",
+    shortcut: "C",
+    svg: (
+      <svg
+        viewBox="0 0 16 16"
+        width="18"
+        height="18"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+      </svg>
+    ),
+  },
+  {
+    name: "circle-filled",
+    label: "Filled circle",
+    shortcut: "Shift+C",
+    svg: (
+      <svg
+        viewBox="0 0 16 16"
+        width="18"
+        height="18"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <circle cx="8" cy="8" r="8" />
+      </svg>
+    ),
+  },
 ];
 
 function IconBtn({
