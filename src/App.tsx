@@ -40,7 +40,7 @@ export default function App() {
   const location = useLocation();
   const editor = useEditor();
   const storage = useStorage();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, action: toastAction, showToast } = useToast();
 
   const [newCanvasOpen, setNewCanvasOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
@@ -48,6 +48,8 @@ export default function App() {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Untitled");
   const [isDirty, setIsDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [highlightOpen, setHighlightOpen] = useState(false);
   const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(
     null,
   );
@@ -138,6 +140,8 @@ export default function App() {
     setCurrentProjectId(null);
     setProjectName("Untitled");
     setIsDirty(false);
+    setLastSavedAt(null);
+    setHighlightOpen(false);
     setNewCanvasOpen(false);
     navigate("/editor");
   }
@@ -176,7 +180,21 @@ export default function App() {
     storage.save(project);
     setCurrentProjectId(project.id);
     setIsDirty(false);
-    showToast("Project saved");
+    const now = Date.now();
+    setLastSavedAt(now);
+
+    // Highlight the Open button after first save in this session
+    if (!highlightOpen) {
+      setHighlightOpen(true);
+      // Remove highlight after 5 seconds
+      setTimeout(() => setHighlightOpen(false), 5000);
+    }
+
+    // Show toast with link to saved projects
+    showToast("Project saved!", {
+      label: "See saved projects",
+      onClick: () => setBrowserOpen(true),
+    });
   }
 
   function handleExportPng() {
@@ -219,6 +237,8 @@ export default function App() {
       setCurrentProjectId(project.id);
       setProjectName(project.name);
       setIsDirty(false);
+      setLastSavedAt(project.savedAt);
+      setHighlightOpen(false);
       setBrowserOpen(false);
       navigate("/editor");
     } catch {
@@ -307,7 +327,7 @@ export default function App() {
               />
             )}
 
-            <Toast message={toastMessage} />
+            <Toast message={toastMessage} action={toastAction} />
           </>
         }
       />
@@ -372,6 +392,8 @@ export default function App() {
                     primaryColor={editor.state.primaryColor}
                     projectName={projectName}
                     isDirty={isDirty}
+                    lastSavedAt={lastSavedAt}
+                    highlightOpen={highlightOpen}
                     onColorChange={editor.setColor}
                     onSave={handleSave}
                     onExportPng={handleExportPng}
@@ -413,7 +435,7 @@ export default function App() {
 
             {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
 
-            <Toast message={toastMessage} />
+            <Toast message={toastMessage} action={toastAction} />
           </>
         }
       />
