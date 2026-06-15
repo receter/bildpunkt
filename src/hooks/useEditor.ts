@@ -12,6 +12,7 @@ export function useEditor() {
     canvasSize: DEFAULT_SIZE,
     zoom: 12,
     showGrid: true,
+    brushSize: 1,
   });
 
   function setTool(tool: ToolName) {
@@ -34,5 +35,17 @@ export function useEditor() {
     setState((s) => ({ ...s, canvasSize }));
   }
 
-  return { state, setTool, setColor, setZoom, toggleGrid, setCanvasSize };
+  function setBrushSize(brushSize: 1 | 2 | 3) {
+    setState((s) => ({ ...s, brushSize }));
+  }
+
+  return {
+    state,
+    setTool,
+    setColor,
+    setZoom,
+    toggleGrid,
+    setCanvasSize,
+    setBrushSize,
+  };
 }
